@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+import static com.mecash.multiCurrencyWalletApp.constants.APP_CONSTANT.*;
 import static com.mecash.multiCurrencyWalletApp.models.enums.Currency.*;
 
 @RequiredArgsConstructor
@@ -90,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
         return ApiResponse.builder()
                 .data(response)
                 .status(HttpStatus.CREATED)
-                .message(APP_CONSTANT.USER_SIGNUP_SUCCESS_MSG)
+                .message(USER_SIGNUP_SUCCESS_MSG)
                 .build();
     }
 
@@ -98,7 +99,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String authenticate(Credentials credentials) {
 
-        AppUser user = userRepository.findUserByEmail(credentials.getEmail()).orElseThrow(() -> new UserNotFoundException(String.format("User with email : %s not found.", credentials.getEmail())));
+        AppUser user = userRepository.findUserByEmail(credentials.getEmail()).orElseThrow(() -> new UserNotFoundException(String.format(USER_EMAIL_NOT_FOUND, credentials.getEmail())));
 
         Authentication authentication;
 
@@ -112,7 +113,7 @@ public class AuthServiceImpl implements AuthService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             return jwtTokenProvider.generateToken(userJsonString);
         } else {
-            throw new AuthException("User is not authenticated.");
+            throw new AuthException(USER_NOT_AUTHENTICATED);
         }
 
     }
