@@ -38,7 +38,7 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
         for (final ObjectError error : ex.getBindingResult().getGlobalErrors()) {
             errors.add(error.getObjectName() + ": " + error.getDefaultMessage());
         }
-        final ErrorDetails apiError = new ErrorDetails(HttpStatus.BAD_REQUEST, ex.getLocalizedMessage(), errors);
+        final ErrorDetails apiError = new ErrorDetails(HttpStatus.BAD_REQUEST, errors.get(0), errors);
         return handleExceptionInternal(ex, apiError, headers, apiError.getStatus(), request);
     }
 

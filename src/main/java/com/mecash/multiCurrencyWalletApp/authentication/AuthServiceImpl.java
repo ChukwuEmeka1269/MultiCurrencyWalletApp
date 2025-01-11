@@ -6,14 +6,20 @@ import com.mecash.multiCurrencyWalletApp.exceptions.UserNotFoundException;
 import com.mecash.multiCurrencyWalletApp.jwt.JwtTokenProvider;
 import com.mecash.multiCurrencyWalletApp.models.AppUser;
 import com.mecash.multiCurrencyWalletApp.models.Credentials;
+import com.mecash.multiCurrencyWalletApp.models.Wallet;
 import com.mecash.multiCurrencyWalletApp.models.dto.AppUserDto;
+import com.mecash.multiCurrencyWalletApp.models.enums.Currency;
 import com.mecash.multiCurrencyWalletApp.models.enums.Role;
 import com.mecash.multiCurrencyWalletApp.models.requests.RegistrationRequest;
 import com.mecash.multiCurrencyWalletApp.models.responses.ApiResponse;
+import com.mecash.multiCurrencyWalletApp.models.responses.UserRegistrationResponse;
 import com.mecash.multiCurrencyWalletApp.repository.UserRepository;
+import com.mecash.multiCurrencyWalletApp.repository.WalletRepository;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,15 +29,24 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.Objects;
+
+import static com.mecash.multiCurrencyWalletApp.models.enums.Currency.*;
+
 @RequiredArgsConstructor
 @Service
 public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
-    private final ObjectMapper objectMapper;
 
+    private final WalletRepository walletRepository;
+    private final ObjectMapper objectMapper;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${wallet.starting.balance}")
+    private BigDecimal balance;
 
     @Override
     public ApiResponse<?> signUp(RegistrationRequest request) {
@@ -44,12 +59,36 @@ public class AuthServiceImpl implements AuthService {
                 .phoneNumber(request.getPhoneNumber())
                 .role(Role.USER)
                 .build();
-        userRepository.save(appUser);
+        AppUser savedUser = userRepository.save(appUser);
 
-        AppUserDto appUserDto = AppUser.toDto(appUser);
+        AppUserDto appUserDto = AppUser.toDto(savedUser);
+
+        Currency currency = NGN;
+
+        if(ObjectUtils.isNotEmpty(request.getCurrency())){
+            currency = Currency.valueOf(request.getCurrency());
+        }
+
+        Wallet wallet = Wallet
+                .builder()
+                .user(savedUser)
+                .accountNumber(savedUser.getPhoneNumber())
+                .balance(balance)
+                .currency(currency)
+                .build();
+
+        Wallet savedWallet = walletRepository.save(wallet);
+
+        UserRegistrationResponse response = UserRegistrationResponse
+                .builder()
+                .user(appUserDto)
+                .balance(savedWallet.getBalance())
+                .accountNumber(savedUser.getPhoneNumber())
+                .currency(savedWallet.getCurrency().name())
+                .build();
 
         return ApiResponse.builder()
-                .data(appUserDto)
+                .data(response)
                 .status(HttpStatus.CREATED)
                 .message(APP_CONSTANT.USER_SIGNUP_SUCCESS_MSG)
                 .build();
