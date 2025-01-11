@@ -27,4 +27,6 @@ public class RegistrationRequest {
     @NotBlank(message = "Password cannot be blank.")
     @Size(min = 8, message = "Please provide a strong password with minimum character length of 8")
     private String password;
+
+    private String currency;
 }
