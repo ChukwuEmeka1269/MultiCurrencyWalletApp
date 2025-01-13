@@ -1,5 +1,6 @@
 package com.mecash.multiCurrencyWalletApp.models;
 
+import com.mecash.multiCurrencyWalletApp.models.dto.WalletDto;
 import com.mecash.multiCurrencyWalletApp.models.enums.Currency;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,8 @@ import lombok.experimental.SuperBuilder;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuperBuilder
 @Getter
@@ -32,5 +35,18 @@ public class Wallet extends Auditable{
 
     @ManyToOne
     private AppUser user;
+
+    @OneToMany(mappedBy = "wallet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Transaction> transactions = new ArrayList<>();
+
+
+    public static WalletDto toDto(Wallet wallet){
+        return WalletDto
+                .builder()
+                .accountNumber(wallet.getAccountNumber())
+                .balance(wallet.getBalance())
+                .currency(wallet.getCurrency())
+                .build();
+    }
 
 }

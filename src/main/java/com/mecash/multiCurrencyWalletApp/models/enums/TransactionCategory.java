@@ -1,6 +1,5 @@
 package com.mecash.multiCurrencyWalletApp.models.enums;
 
+public enum TransactionCategory {
 
-public enum Status {
-    PENDING, COMPLETED, FAILED
 }
