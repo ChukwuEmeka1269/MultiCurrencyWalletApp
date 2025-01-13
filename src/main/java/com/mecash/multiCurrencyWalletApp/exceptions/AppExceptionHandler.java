@@ -5,7 +5,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,6 +23,43 @@ import java.util.Objects;
 public class AppExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ExceptionResponse<?>> handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
+
+        return getExceptionResponseResponseEntity(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(WalletNotFoundException.class)
+    public ResponseEntity<ExceptionResponse<?>> handleWalletNotFoundException(WalletNotFoundException ex, WebRequest request) {
+
+
+        return getExceptionResponseResponseEntity(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+    public ResponseEntity<ExceptionResponse<?>> handleSQLIntegrityConstraintViolationException(SQLIntegrityConstraintViolationException ex, WebRequest request) {
+
+        return getExceptionResponseResponseEntity(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<ExceptionResponse<?>> handleNullPointerException(NullPointerException ex, WebRequest request) {
+
+        return getExceptionResponseResponseEntity(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<ExceptionResponse<?>> handleInsufficientFundException(InsufficientFundsException ex, WebRequest request) {
+
+        return getExceptionResponseResponseEntity(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(TransactionProcessingException.class)
+    public ResponseEntity<ExceptionResponse<?>> handleTxnProcessingException(TransactionProcessingException ex, WebRequest request) {
+
+        return getExceptionResponseResponseEntity(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ExceptionResponse<?>> handleNotFoundException(NotFoundException ex, WebRequest request) {
 
         return getExceptionResponseResponseEntity(ex, HttpStatus.NOT_FOUND);
     }
