@@ -24,13 +24,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SpringSecurityConfig {
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtAuthenticationFilter authenticationFilter;
-    private static final String[] WHITELISTED_ENDPOINTS = {"/api/v1/auth/**","/auth", "/users", "/v2/api-docs",
+    private static final String[] WHITELISTED_ENDPOINTS = {"/api/v1/auth/**", "/auth", "/users", "/v2/api-docs",
             "/swagger-resources",
             "/swagger-resources/**",
             "/configuration/ui",
             "/configuration/security",
             "/swagger-ui.html",
             "/webjars/**",
+            "/v3/api-docs",
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/actuator",
@@ -40,7 +41,7 @@ public class SpringSecurityConfig {
             "/actuator/health"};
 
     @Bean
-    public static PasswordEncoder passwordEncoder(){
+    public static PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -55,12 +56,13 @@ public class SpringSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> {
                     authorize.requestMatchers(WHITELISTED_ENDPOINTS).permitAll();
+                    authorize.requestMatchers("/v3/api-docs").permitAll();
                     authorize.requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll();
                     authorize.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     authorize.anyRequest().authenticated();
                 }).httpBasic(Customizer.withDefaults());
 
-        http.exceptionHandling( exception -> exception
+        http.exceptionHandling(exception -> exception
                 .authenticationEntryPoint(authenticationEntryPoint));
 
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
